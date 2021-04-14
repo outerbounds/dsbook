@@ -1,2 +1,3 @@
-# dsbook
-Code samples from the Effective Data Science Infrastructure book
+# Effective Data Science Infrastructure
+
+Code samples for the Effective Data Science Infrastructure book
