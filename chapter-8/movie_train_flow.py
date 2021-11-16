@@ -5,24 +5,24 @@ ANN_ACCURACY = 100
 
 @conda_base(python='3.8.10', libraries={'pyarrow': '5.0.0',
                                         'python-annoy': '1.17.0'})
-class MovieTrainModelFlow(FlowSpec):
+class MovieTrainFlow(FlowSpec):
 
     @resources(memory=10000)
     @step
     def start(self):
-        import movie_model
+        import movie_data
         self.model_movies_mtx, self.model_dim =\
-            movie_model.load_model_movies_mtx()
-        self.model_users_mtx = movie_model.load_model_users_mtx()
-        self.movie_names = movie_model.load_movie_names()
+            movie_data.load_model_movies_mtx()
+        self.model_users_mtx = movie_data.load_model_users_mtx()
+        self.movie_names = movie_data.load_movie_names()
         self.next(self.build_annoy_index)
 
     @resources(memory=10000)
     @step
     def build_annoy_index(self):
         from annoy import AnnoyIndex
-        import movie_model
-        vectors = movie_model.make_user_vectors(\
+        import movie_data
+        vectors = movie_data.make_user_vectors(\
                     self.model_users_mtx.items(),
                     self.model_movies_mtx)
         with NamedTemporaryFile() as tmp:
@@ -41,4 +41,4 @@ class MovieTrainModelFlow(FlowSpec):
         pass
 
 if __name__ == '__main__':
-    MovieTrainModelFlow()
+    MovieTrainFlow()

@@ -1,16 +1,10 @@
 from metaflow import FlowSpec, step, conda_base, Parameter,\
                      current, resources, Flow, Run
-from collections import Counter
-from itertools import chain, combinations, groupby
-
-BATCH_SIZE = 100000
-def top_movies(user_movies, top_k):
-    stats = Counter(chain.from_iterable(user_movies.values()))
-    return [int(k) for k, _ in stats.most_common(top_k)]
+from itertools import chain, combinations
 
 @conda_base(python='3.8.10', libraries={'pyarrow': '5.0.0',
                                         'python-annoy': '1.17.0'})
-class MovieBatchPredictFlow(FlowSpec):
+class MovieRecsFlow(FlowSpec):
 
     num_recs = Parameter('num_recs',
                          help="Number of recommendations per user",
@@ -22,23 +16,21 @@ class MovieBatchPredictFlow(FlowSpec):
     @resources(memory=10000)
     @step
     def start(self):
-        run = Flow('MovieTrainModelFlow').latest_successful_run
+        from movie_recs_util import make_batches, top_movies
+        run = Flow('MovieTrainFlow').latest_successful_run
         self.movie_names = run['start'].task['movie_names'].data
         self.model_run = run.pathspec
         print('Using model from', self.model_run)
         model_users_mtx = run['start'].task['model_users_mtx'].data
         self.top_movies = top_movies(model_users_mtx,
                                      self.num_top_movies)
-        self.batched_pairs = []
-        pairs = enumerate(combinations(self.top_movies, 2))
-        for _, batch in groupby(pairs, lambda x: x[0] // BATCH_SIZE):
-            self.batched_pairs.append(list(batch))
-        self.next(self.batch_score, foreach='batched_pairs')
+        self.pairs = make_batches(combinations(self.top_movies, 2))
+        self.next(self.batch_recommend, foreach='pairs')
 
     @resources(memory=10000)
     @step
-    def batch_score(self):
-        from movie_model_recs import load_model, recommend
+    def batch_recommend(self):
+        from movie_model import load_model, recommend
         run = Run(self.model_run)
         model_ann, model_users_mtx, model_movies_mtx = load_model(run)
         self.recs = list(recommend(self.input,
@@ -65,5 +57,4 @@ class MovieBatchPredictFlow(FlowSpec):
         pass
 
 if __name__ == '__main__':
-    MovieBatchPredictFlow()
-
+    MovieRecsFlow()

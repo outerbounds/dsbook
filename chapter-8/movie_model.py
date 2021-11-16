@@ -1,46 +1,44 @@
-from pyarrow.csv import read_csv
-import numpy as np
+from collections import Counter
+from tempfile import NamedTemporaryFile
+from movie_data import make_user_vectors
 
-def load_model_movies_mtx():
-    genome_dim = read_csv('genome-tags.csv').num_rows
-    genome_table = read_csv('genome-scores.csv')
-    movie_ids = genome_table['movieId'].to_numpy()
-    scores = genome_table['relevance'].to_numpy()
-    model_movies_mtx = {}
-    for i in range(0, len(scores), genome_dim):
-        model_movies_mtx[movie_ids[i]] = scores[i:i+genome_dim]
-    return model_movies_mtx, genome_dim
+RECS_ACCURACY = 100
 
-def load_model_users_mtx():
-    ratings = read_csv('ratings.csv')
-    good = ratings.filter(ratings['rating'].to_numpy() > 3.5)
-    ids, counts = np.unique(good['userId'].to_numpy(),
-                            return_counts=True)
-    movies = good['movieId'].to_numpy()
-    model_users_mtx = {}
-    idx = 0
-    for i, user_id in enumerate(ids):
-        model_users_mtx[user_id] = tuple(movies[idx:idx + counts[i]])
-        idx += counts[i]
-    return model_users_mtx
+def load_model(run):
+    from annoy import AnnoyIndex
+    model_ann = AnnoyIndex(run.data.model_dim)
+    with NamedTemporaryFile() as tmp:
+        tmp.write(run.data.model_ann)
+        model_ann.load(tmp.name)
+    return model_ann,\
+           run.data.model_users_mtx,\
+           run.data.model_movies_mtx
 
-def load_movie_names():
-    import csv
-    names = {}
-    with open('movies.csv', newline='') as f:
-        reader = iter(csv.reader(f))
-        next(reader)
-        for movie_id, name, _ in reader:
-            names[int(movie_id)] = name
-    return names
+def recommend(movie_sets,
+              model_movies_mtx,
+              model_users_mtx,
+              model_ann,
+              num_recs):
+    for _, movie_set, vec in make_user_vectors(movie_sets, model_movies_mtx):
+        for k in range(10, 100, 10):
+            similar_users =\
+                model_ann.get_nns_by_vector(vec,
+                                            k,
+                                            search_k=RECS_ACCURACY)
+            recs = find_common_movies(similar_users,
+                                      model_users_mtx,
+                                      num_recs,
+                                      exclude=movie_set)
+            if recs:
+                break
+        yield movie_set, recs
 
-def make_user_vectors(movie_sets, model_movies_mtx):
-    user_vector = next(iter(model_movies_mtx.values())).copy()
-    for user_id, movie_set in movie_sets:
-        user_vector.fill(0)
-        for movie_id in movie_set:
-            if movie_id in model_movies_mtx:
-                user_vector += model_movies_mtx[movie_id]
-        yield user_id,\
-              movie_set,\
-              user_vector / np.linalg.norm(user_vector)
+def find_common_movies(users, model_users_mtx, top_n, exclude=None):
+    stats = Counter()
+    for user_id in users:
+        stats.update(model_users_mtx[user_id])
+    if exclude:
+        for movie_id in exclude:
+            stats.pop(movie_id, None)
+    return [int(movie_id)
+            for movie_id, _ in stats.most_common(top_n)]
