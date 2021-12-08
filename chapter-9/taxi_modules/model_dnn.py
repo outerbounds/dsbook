@@ -1,19 +1,10 @@
 import tempfile
+EPOCHS = 2
 
 class Model():
     NAME = 'grid_dnn'
-    MODEL_LIBRARIES = {} # FIXME: add tensorflow
-
-    @classmethod
-    def match(cls, features):
-        return 'grid' in features
-
-    @classmethod
-    def mse(cls, model, test_data):
-        import numpy
-        pred = model.predict(test_data['grid']['tensor'])
-        arr = numpy.array([x[0] for x in pred])
-        return ((arr - test_data['baseline']['amount'])**2).mean()
+    MODEL_LIBRARIES = {'tensorflow-base': '2.6.0'}
+    FEATURES = ['grid']
 
     @classmethod
     def fit(cls, train_data):
@@ -28,13 +19,16 @@ class Model():
                       optimizer=tf.keras.optimizers.Adam(0.001))
         model.fit(x=train_data['grid']['tensor'],
                   y=train_data['baseline']['amount'],
-                  epochs=2,
+                  epochs=EPOCHS,
                   verbose=2)
         return model
 
     @classmethod
-    def visualize(cls, model, test_data):
-        return None
+    def mse(cls, model, test_data):
+        import numpy
+        pred = model.predict(test_data['grid']['tensor'])
+        arr = numpy.array([x[0] for x in pred])
+        return ((arr - test_data['baseline']['amount'])**2).mean()
 
     @classmethod
     def save_model(cls, model):
