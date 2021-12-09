@@ -38,6 +38,4 @@ class FeatureEncoder():
     
     @classmethod
     def merge(cls, shards):
-        from tensorflow.sparse import concat
-        return {key: concat(axis=0, sp_inputs=[s[key] for s in shards])
-                for key in shards[0]}
+        return {key: [s[key] for s in shards] for key in shards[0]}
