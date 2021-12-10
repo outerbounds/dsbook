@@ -18,7 +18,7 @@ class Model(KerasModel):
         num_steps = len(train_data['baseline']['amount']) // BATCH_SIZE
         model.fit(data,
                   epochs=EPOCHS,
-                  verbose=1,
+                  verbose=2,
                   steps_per_epoch=num_steps,
                   callbacks=[monitor])
         return model

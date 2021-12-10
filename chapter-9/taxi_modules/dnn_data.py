@@ -7,21 +7,22 @@ def data_loader(tensor_shards, target=None):
         if target is not None:
             out_tensor = tf.reshape(tf.convert_to_tensor(target),
                                     (len(target), 1))
-        row = 0
-        for shard in tensor_shards:
-            idx = 0
-            while True:
-                x = tf.sparse.slice(shard, [idx, 0], [BATCH_SIZE, dim])
-                n, _ = x.shape
-                if n > 0:
-                    if target is not None:
-                        yield x, tf.slice(out_tensor, [row, 0], [n, 1])
+        while True:
+            row = 0
+            for shard in tensor_shards:
+                idx = 0
+                while True:
+                    x = tf.sparse.slice(shard, [idx, 0], [BATCH_SIZE, dim])
+                    n, _ = x.shape
+                    if n > 0:
+                        if target is not None:
+                            yield x, tf.slice(out_tensor, [row, 0], [n, 1])
+                        else:
+                            yield x
+                        row += n
+                        idx += n
                     else:
-                        yield x
-                    row += n
-                    idx += n
-                else:
-                    break
+                        break
 
     input_sig = tf.SparseTensorSpec(shape=(None, dim))
     if target is None:
