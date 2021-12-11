@@ -32,5 +32,5 @@ def data_loader(tensor_shards, target=None):
         signature = (input_sig, tf.TensorSpec(shape=(None, 1)))
     dataset = tf.data.Dataset.from_generator(make_batches,\
                 output_signature=signature)
-    data.prefetch(tf.data.AUTOTUNE)
+    dataset.prefetch(tf.data.AUTOTUNE)
     return input_sig, dataset
