@@ -3,12 +3,11 @@ BATCH_SIZE = 128
 def data_loader(tensor_shards, target=None):
     import tensorflow as tf
     _, dim = tensor_shards[0].shape
-    is_training = target is not None
     def make_batches():
         if target is not None:
             out_tensor = tf.reshape(tf.convert_to_tensor(target),
                                     (len(target), 1))
-        while is_training:
+        while True:
             row = 0
             for shard in tensor_shards:
                 idx = 0
@@ -24,6 +23,8 @@ def data_loader(tensor_shards, target=None):
                         idx += n
                     else:
                         break
+            if target is not None:
+                break
 
     input_sig = tf.SparseTensorSpec(shape=(None, dim))
     if target is None:
