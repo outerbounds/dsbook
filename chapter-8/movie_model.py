@@ -1,6 +1,6 @@
 from collections import Counter
 from tempfile import NamedTemporaryFile
-from movie_data import make_user_vectors
+from movie_uservec import make_user_vectors
 
 RECS_ACCURACY = 100
 

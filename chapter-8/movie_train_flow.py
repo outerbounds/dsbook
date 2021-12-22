@@ -21,8 +21,8 @@ class MovieTrainFlow(FlowSpec):
     @step
     def build_annoy_index(self):
         from annoy import AnnoyIndex
-        import movie_data
-        vectors = movie_data.make_user_vectors(\
+        import movie_uservec
+        vectors = movie_uservec.make_user_vectors(\
                     self.model_users_mtx.items(),
                     self.model_movies_mtx)
         with NamedTemporaryFile() as tmp:
