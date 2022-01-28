@@ -42,6 +42,7 @@ class ForecastFlow(FlowSpec):
         self.plot = buf.getvalue()
         self.next(self.end)
 
+    @conda(python='3.8.10')
     @step
     def end(self):
         pass
