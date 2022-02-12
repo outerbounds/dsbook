@@ -18,7 +18,7 @@ class KmeansFlow(FlowSpec):
     @step
     def train_kmeans(self):
         from sklearn.cluster import KMeans
-        with profile('CPU %d: k-means' % self.num_cpu):
+        with profile('k-means'):
             kmeans = KMeans(n_clusters=10, verbose=1, n_init=1)
             kmeans.fit(self.mtx)
         self.clusters = kmeans.labels_
