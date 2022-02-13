@@ -14,13 +14,12 @@ class ParquetBenchmarkFlow(FlowSpec):
             res = s3.get(URL)
             table = pq.read_table(res.path)
             os.rename(res.path, 'taxi.parquet')
-        #table.to_pandas().to_csv('taxi.csv')
+        table.to_pandas().to_csv('taxi.csv')
         self.stats = {}
         self.next(self.load_csv, self.load_parquet, self.load_pandas)
 
     @step
     def load_csv(self):
-        print('joi')
         with profile('load_csv', stats_dict=self.stats):
             import csv
             with open('taxi.csv') as csvfile:
@@ -44,7 +43,7 @@ class ParquetBenchmarkFlow(FlowSpec):
     @step
     def join(self, inputs):
         for inp in inputs:
-            print(list(inp.stats.items())[0], inp.mem_usage)
+            print(list(inp.stats.items())[0])
         self.next(self.end)
 
     @step
