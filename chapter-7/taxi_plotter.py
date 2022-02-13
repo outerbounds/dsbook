@@ -12,6 +12,7 @@ class TaxiPlotterFlow(FlowSpec):
 
     use_ctas = Parameter('use_ctas_data', help='Use CTAS data', default=False)
 
+    @conda(python='3.8.10')
     @step
     def start(self):
         if self.use_ctas:
@@ -56,6 +57,7 @@ class TaxiPlotterFlow(FlowSpec):
         self.image = taxiviz.visualize(lat, lon)
         self.next(self.end)
     
+    @conda(python='3.8.10')
     @step
     def end(self):
         pass

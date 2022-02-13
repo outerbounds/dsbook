@@ -27,7 +27,7 @@ class TaxiRegressionFlow(FlowSpec):
         self.next(self.preprocess_data, foreach='shards')
 
     @resources(memory=16000)
-    @conda(python='3.8.10', libraries={'pyarrow': '5.0.0'})
+    @conda(libraries={'pyarrow': '5.0.0'})
     @step
     def preprocess_data(self):
         from table_utils import filter_outliers, sample 
@@ -43,7 +43,7 @@ class TaxiRegressionFlow(FlowSpec):
         self.next(self.join)
 
     @resources(memory=8000)
-    @conda(python='3.8.10', libraries={'numpy': '1.21.1'})
+    @conda(libraries={'numpy': '1.21.1'})
     @step
     def join(self, inputs):
         from numpy import concatenate
@@ -54,9 +54,9 @@ class TaxiRegressionFlow(FlowSpec):
         self.next(self.regress)
 
     @resources(memory=8000)
-    @conda(python='3.8.10', libraries={'numpy': '1.21.1',
-                                       'scikit-learn': '0.24.1',
-                                       'matplotlib': '3.4.3'})
+    @conda(libraries={'numpy': '1.21.1',
+                      'scikit-learn': '0.24.1',
+                      'matplotlib': '3.4.3'})
     @step
     def regress(self):
         from taxi_model import fit, visualize
