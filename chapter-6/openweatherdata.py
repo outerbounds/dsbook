@@ -12,7 +12,7 @@ def get_historical_weather_data(appid, lat, lon):
     for ago in range(5, 0, -1):
         tstamp = int((now - timedelta(days=ago)).timestamp())
         params = {'lat': lat, 'lon': lon, 'dt': tstamp,
-                  'appid': appid, 'units': 'metric'}
+                  'appid': appid, 'units': 'imperial'}
         reply = requests.get(HISTORY_API, params=params).json()
         for hour in reply['hourly']:  
             data.append(hour['temp'])
