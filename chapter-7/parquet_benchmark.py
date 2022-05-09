@@ -23,7 +23,8 @@ class ParquetBenchmarkFlow(FlowSpec):
         with profile('load_csv', stats_dict=self.stats):
             import csv
             with open('taxi.csv') as csvfile:
-                rows = list(csv.reader(csvfile))
+                for row in csv.reader(csvfile):
+                    pass
         self.next(self.join)
 
     @step
