@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 
-HISTORY_API = 'https://api.openweathermap.org/data/2.5/onecall/timemachine'
+HISTORY_API = 'https://api.openweathermap.org/data/3.0/onecall'
 
 def get_historical_weather_data(appid, lat, lon):
     import pandas as pd
