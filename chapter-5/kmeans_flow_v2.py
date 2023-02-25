@@ -1,6 +1,6 @@
 from metaflow import FlowSpec, step, Parameter, resources, conda_base, profile
 
-@conda_base(python='3.8.3', libraries={'scikit-learn': '0.24.1'})
+@conda_base(python='3.8.3', libraries={'scikit-learn': '0.24.1', 'boto3':'1.24.77'})
 class KmeansFlow(FlowSpec):
 
     num_docs = Parameter('num-docs', help='Number of documents', default=1000000)
