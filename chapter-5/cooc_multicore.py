@@ -21,6 +21,5 @@ def compute_cooc(mtx, num_cpu):
     from cooc_plain import simple_cooc, new_cooc
     cooc = new_cooc(mtx)
     fast_cooc = jit(nopython=True, nogil=True)(simple_cooc)
-    fast_cooc(mtx.indptr, mtx.indices, cooc)
     compute_cooc_multicore(mtx.indptr, mtx.indices, cooc, num_cpu, fast_cooc)
     return cooc
