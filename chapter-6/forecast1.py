@@ -22,7 +22,7 @@ class ForecastFlow(FlowSpec):
         from sktime.utils.plotting import plot_series
         from io import BytesIO
         buf = BytesIO()
-        fig, _ = plot_series(self.pd_past5days, labels=['past5days'])
+        fig, _ = plot_series(self.pd_past5days.sort_index(axis=0), labels=['past5days'])
         fig.savefig(buf)
         self.plot = buf.getvalue()
         self.next(self.end)
